@@ -1,0 +1,29 @@
+{
+  "name": "linenumber",
+  "version": "1.0.0",
+  "description": "Get line numbers of matches in a file",
+  "main": "lib/linenumber.js",
+  "scripts": {
+    "test": "grunt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tandrewnichols/linenumber.git"
+  },
+  "keywords": [
+    "index",
+    "line",
+    "number",
+    "file"
+  ],
+  "author": {
+    "name": "Andrew Nichols",
+    "email": "tandrewnichols@gmail.com",
+    "url": "www.tandrewnichols.me"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tandrewnichols/linenumber/issues"
+  },
+  "homepage": "https://github.com/tandrewnichols/linenumber"
+}
