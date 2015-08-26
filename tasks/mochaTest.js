@@ -2,9 +2,9 @@ module.exports = {
   options: {
     reporter: 'spec',
     ui: 'mocha-given',
-    require: 'coffee-script/register'
+    require: ['coffee-script/register', 'should']
   },
   test: {
-    src: ['test/**/*.coffee', '!test/browser/**']
+    src: ['test/**/*.coffee']
   }
 };

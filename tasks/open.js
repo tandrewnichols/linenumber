@@ -1,5 +1,5 @@
 module.exports = {
   coverage: {
-    path: 'coverage/coverage.html'
+    path: 'coverage/lcov-report/index.html'
   }
 };
