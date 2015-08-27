@@ -1,6 +1,8 @@
 module.exports = {
   mocha: ['mochaTest:test'],
-  'default': ['jshint:all', 'mocha'],
+  test: ['jshint:all', 'mocha', 'testem:ci:browser'],
+  'default': ['test'],
   coverage: ['istanbul:unit', 'open:coverage'],
-  ci: ['test', 'travis']
+  ci: ['test', 'travis'],
+  build: ['clean:dist', 'copy:dist', 'uglify:dist']
 };
