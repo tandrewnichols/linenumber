@@ -3,9 +3,10 @@ module.exports = {
     src: [
       'lib/linenumber.js',
       'node_modules/mocha-given/browser/mocha-given.js',
+      'test/helpers/setup.js',
+      'node_modules/chai/chai.js',
       'test/helpers/should.coffee',
-      'node_modules/should/should.js',
-      'test/*.coffee'
+      'test/linenumber.coffee'
     ],
     options: {
       framework: 'mocha',
