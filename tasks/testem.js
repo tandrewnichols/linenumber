@@ -1,6 +1,7 @@
 module.exports = {
   browser: {
     src: [
+      'test/helpers/bind-polyfill.js',
       'lib/linenumber.js',
       'node_modules/mocha-given/browser/mocha-given.js',
       'test/helpers/setup.js',
