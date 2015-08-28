@@ -34,25 +34,36 @@
     }
   };
 
-  var linenumber = function(file, query, loader) {
+  var linenumber = function(loader, args, file, query) {
     // If "file" looks like a filename
     if (file.indexOf('\n') === -1 && file.indexOf('.') > -1) {
-      // If a specific file loading function is provided, provide
-      // the filename to that loader. As an example, in an angular app,
-      // you could pass $templateCache.get as the loader to parse cached
-      // templates. If no loader is provided, use fs.readFileSync.
-      var contents = loader ? loader(file) : fs.readFileSync(file, { encoding: 'utf8' });
+      // Call the loader with the supplied args.
+      var contents = loader.apply(null, [file].concat(args));
       return find(contents, query, file);
     } else {
       return find(file, query); 
     }
   };
 
-  // Maybe slightly over-simplified but should be sufficient in most cases
+  var loader = function(loader) {
+    var args = [].slice.call(arguments, 1);
+    return linenumber.bind(null, loader, args);
+  };
+
+  // Decide if we're in node or browser
   if (typeof module === 'object' && module.exports) {
-    module.exports = linenumber;
+    // The default loader in node uses fs.readFileSync
+    var fsLoader = linenumber.bind(null, fs.readFileSync, { encoding: 'utf8' });
+    // Add the loader mechanism so that other loaders can be supplied
+    fsLoader.loader = loader;
+    module.exports = fsLoader;
   } else {
-    window.linenumber = linenumber;
+    // In the browser, there is no default loader.
+    // The default is to pass the content in yourself.
+    var defaultLoader = linenumber.bind(null, null, []);
+    // However, you can still create a loader for a specific library.
+    defaultLoader.loader = loader;
+    window.linenumber = defaultLoader;
   }
 
 })();
