@@ -1,6 +1,9 @@
 (function() {
-  // require fs or stub it if we're in a browser
-  var fs = typeof window === 'undefined' ? require('fs') : {};
+  // Decide what environment we're running in
+  var isNode = typeof module !== 'undefined' && this.module !== module;
+
+  /* istanbul ignore next */ 
+  var fs = isNode ? require('fs') : {};
 
   var find = function(contents, query, file) {
     // Create a regex for the query if it's not one already
@@ -50,8 +53,8 @@
     return linenumber.bind(null, loader, args);
   };
 
-  // Decide if we're in node or browser
-  if (typeof module === 'object' && module.exports) {
+  /* istanbul ignore else */
+  if (isNode) {
     // The default loader in node uses fs.readFileSync
     var fsLoader = linenumber.bind(null, fs.readFileSync, { encoding: 'utf8' });
     // Add the loader mechanism so that other loaders can be supplied
