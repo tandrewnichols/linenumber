@@ -1,7 +1,7 @@
 {
   "name": "linenumber",
   "version": "1.0.0",
-  "description": "Get line numbers of matches in a file",
+  "description": "Get the line number of one or more matches in a file",
   "main": "lib/linenumber.js",
   "scripts": {
     "test": "grunt"

@@ -56,11 +56,18 @@ describe 'linenumber with literal text', ->
 
   context 'with a custom file loader', ->
     Given -> @get = (file) =>
-      return @text
-    Given -> @custom = @linenumber.loader @get
-    When -> @match = @custom "foo/bar/banana.js", 'getColor'
+      return """
+        #{@text}
+        getColor
+      """
+    Given -> @linenumber.loader @get
+    When -> @match = @linenumber "foo/bar/banana.js", 'getColor'
     Then -> @match.should.eql [
       file: "foo/bar/banana.js"
       line: 7
+      match: 'getColor'
+    ,
+      file: "foo/bar/banana.js"
+      line: 10
       match: 'getColor'
     ]

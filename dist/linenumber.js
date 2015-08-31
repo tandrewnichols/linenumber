@@ -1,9 +1,13 @@
-(function() {
+(function(root) {
   // Decide what environment we're running in
   var isNode = typeof module !== 'undefined' && this.module !== module;
 
   /* istanbul ignore next */ 
   var fs = isNode ? require('fs') : {};
+  var loader, args;
+
+  var defaultLoader = fs.readFileSync;
+  var defaultArgs = [{ encoding: 'utf8' }];
 
   var find = function(contents, query, file) {
     // Create a regex for the query if it's not one already
@@ -37,7 +41,7 @@
     }
   };
 
-  var linenumber = function(loader, args, file, query) {
+  var linenumber = function(file, query, cb) {
     // If "file" looks like a filename
     if (file.indexOf('\n') === -1 && file.indexOf('.') > -1) {
       // Call the loader with the supplied args.
@@ -48,25 +52,24 @@
     }
   };
 
-  var loader = function(loader) {
-    var args = [].slice.call(arguments, 1);
-    return linenumber.bind(null, loader, args);
+  linenumber.loader = function(fn) {
+    loader = fn;
+    args = [].slice.call(arguments, 1);
   };
+
+  linenumber.reset = function() {
+    loader = defaultLoader;
+    args = defaultArgs;
+  };
+
+  // Initialize loader and args
+  linenumber.reset();
 
   /* istanbul ignore else */
   if (isNode) {
-    // The default loader in node uses fs.readFileSync
-    var fsLoader = linenumber.bind(null, fs.readFileSync, { encoding: 'utf8' });
-    // Add the loader mechanism so that other loaders can be supplied
-    fsLoader.loader = loader;
-    module.exports = fsLoader;
+    module.exports = linenumber;
   } else {
-    // In the browser, there is no default loader.
-    // The default is to pass the content in yourself.
-    var defaultLoader = linenumber.bind(null, null, []);
-    // However, you can still create a loader for a specific library.
-    defaultLoader.loader = loader;
-    window.linenumber = defaultLoader;
+    window.linenumber = linenumber;
   }
 
 })();
