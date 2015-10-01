@@ -242,3 +242,10 @@ describe 'linenumber with literal text', ->
           line: 7
           match: 'getColor'
         ]
+
+      context 'but no async operations', ->
+        When (done) -> @linenumber @text, 'getColor', (@match) => done()
+        Then -> @match.should.eql [
+          line: 7
+          match: 'getColor'
+        ]
