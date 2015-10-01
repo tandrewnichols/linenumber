@@ -1,13 +1,18 @@
-(function(root) {
+(function() {
   // Decide what environment we're running in
   var isNode = typeof module !== 'undefined' && this.module !== module;
 
   /* istanbul ignore next */ 
   var fs = isNode ? require('fs') : {};
-  var loader, args;
 
-  var defaultLoader = fs.readFileSync;
-  var defaultArgs = [{ encoding: 'utf8' }];
+  var loader;
+
+  var defaults = {
+    sync: fs.readFileSync,
+    async: fs.readFile,
+    args: [{ encoding: 'utf8' }],
+    context: fs
+  };
 
   var find = function(contents, query, file) {
     // Create a regex for the query if it's not one already
@@ -42,24 +47,77 @@
   };
 
   var linenumber = function(file, query, cb) {
+    var process = function() {
+      var matches = find.apply(null, arguments);
+      if (cb) {
+        cb(null, matches);
+      } else {
+        return matches;
+      }
+    };
+
     // If "file" looks like a filename
     if (file.indexOf('\n') === -1 && file.indexOf('.') > -1) {
-      // Call the loader with the supplied args.
-      var contents = loader.apply(null, [file].concat(args));
-      return find(contents, query, file);
+      // If we have a callback and an async loading mechanism
+      if (cb && loader.async) {
+        // Invoke the loader with the supplied context and any additional args, but wrap the callback
+        loader.async.apply(loader.context, [file].concat(loader.args).concat(function(err, contents) {
+          if (err) cb(err);
+          else cb(null, find(contents, query, file));
+        }));
+      } else {
+        var contents = loader.sync.apply(loader.context, [file].concat(loader.args));
+        return process(contents, query, file);
+      }
     } else {
-      return find(file, query); 
+      // "file" is actually the contents to parse
+      return process(file, query);
+    }
+  };
+
+  var _loader = function(fn, args, context) {
+    if (fn.constructor.name === 'Array') {
+      loader = {
+        sync: fn[0],
+        async: fn[1],
+        args: args,
+        context: context
+      };
+    } else if (fn.constructor.name === 'Object') {
+      loader = {
+        sync: fn.sync,
+        async: fn.async,
+        args: args,
+        context: context
+      };
     }
   };
 
   linenumber.loader = function(fn) {
-    loader = fn;
-    args = [].slice.call(arguments, 1);
+    var args = [].slice.call(arguments, 1);
+    if (typeof fn === 'function') {
+      _loader({ async: fn }, args, this);
+    } else {
+      _loader(fn, args, this);
+    }
+  };
+
+  linenumber.loaderSync = function(fn) {
+    var args = [].slice.call(arguments, 1);
+    if (typeof fn === 'function') {
+      _loader({ sync: fn }, args, this);
+    } else {
+      _loader(fn, args, this);
+    }
   };
 
   linenumber.reset = function() {
-    loader = defaultLoader;
-    args = defaultArgs;
+    loader = {
+      sync: defaults.sync,
+      async: defaults.async,
+      args: defaults.args,
+      context: defaults.context
+    };
   };
 
   // Initialize loader and args

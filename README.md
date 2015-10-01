@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/tandrewnichols/linenumber.png)](https://travis-ci.org/tandrewnichols/linenumber) [![downloads](http://img.shields.io/npm/dm/linenumber.svg)](https://npmjs.org/package/linenumber) [![npm](http://img.shields.io/npm/v/linenumber.svg)](https://npmjs.org/package/linenumber) [![Code Climate](https://codeclimate.com/github/tandrewnichols/linenumber/badges/gpa.svg)](https://codeclimate.com/github/tandrewnichols/linenumber) [![Test Coverage](https://codeclimate.com/github/tandrewnichols/linenumber/badges/coverage.svg)](https://codeclimate.com/github/tandrewnichols/linenumber) [![dependencies](https://david-dm.org/tandrewnichols/linenumber.png)](https://david-dm.org/tandrewnichols/linenumber) ![Size](https://img.shields.io/badge/size-0.7kb-brightgreen.svg)
+[![Build Status](https://travis-ci.org/tandrewnichols/linenumber.png)](https://travis-ci.org/tandrewnichols/linenumber) [![downloads](http://img.shields.io/npm/dm/linenumber.svg)](https://npmjs.org/package/linenumber) [![npm](http://img.shields.io/npm/v/linenumber.svg)](https://npmjs.org/package/linenumber) [![Code Climate](https://codeclimate.com/github/tandrewnichols/linenumber/badges/gpa.svg)](https://codeclimate.com/github/tandrewnichols/linenumber) [![Test Coverage](https://codeclimate.com/github/tandrewnichols/linenumber/badges/coverage.svg)](https://codeclimate.com/github/tandrewnichols/linenumber) [![dependencies](https://david-dm.org/tandrewnichols/linenumber.png)](https://david-dm.org/tandrewnichols/linenumber) ![Size](https://img.shields.io/badge/size-1.25kb-brightgreen.svg)
 
 # linenumber
 
@@ -10,11 +10,11 @@ Get the line number of one or more matches in a file
 
 ## Summary
 
-Pass in the contents of a file or a filename, along with a pattern, and get back an array that includes the line numbers of any matches in that file.
+Pass in the contents of a file or a filename, along with a pattern and an optional callback, and get back an array that includes the line numbers of any matches in that file.
 
 ## Usage
 
-Linenumber takes two arguments, the content to search (which can also be a filename) and the string or regular expression pattern to search for.
+Pass the content to search (which can also be a filename) and the string or regular expression pattern to search for to linenumber, along with an optional callback.
 
 For example, given _lib/foo.json_,
 
@@ -29,6 +29,9 @@ For example, given _lib/foo.json_,
 any of the following will work:
 
 ```js
+/**
+ * SYNC
+ */
 var linenumber = require('linenumber');
 
 // With string content and query
@@ -42,63 +45,89 @@ linenumber('lib/foo.json', /ba./g); // [{ line: 3, match: 'bar', file: 'lib/foo.
 
 // Without a match
 linenumber('lib/foo.json', 'hello'); // null
+
+/**
+ * ASYNC
+ */
+// The other versions above will also work asynchronously if a callback is passed
+linenumber('lib/foo.json', 'bar', function(err, results) { // ... }); // results = [{ line: 3, match: 'bar', file: 'lib/foo.json' }]
 ```
 
-By default, `linenumber` will use `fs.readFileSync` to read in the contents of a file, but you can set it up to use a different file loader if desired. For instance, since our examples above use a `.json` file, we can make `linenumber` use `require` as the loader instead.
+By default, `linenumber` will use `fs.readFile` and `fs.readFileSync` to read in the contents of a file, but you can set it up to use a different file loader if desired. For instance, since our examples above use a `.json` file, we can make `linenumber` use `require` as the loader instead.
 
 ```js
-linenumber.loader(require);
+linenumber.loaderSync(require);
 linenumber('lib/foo.json', 'bar');
 ```
 
-### Browser
+## Custom Loaders
 
-Use whatever serving mechanism you prefer and serve `dist/expand-path.js` or `dist/expand-path.min.js`, then access it globally with `expandPath`.
+As above, you can provide custom loaders for reading the contents of a "file" (which could really mean anything). There are several ways to do this.
+
+### Sync loader only
+
+Call `linenumber.loaderSync` and pass the function.
+
+```js
+linenumber.loaderSync(require);
+```
+
+### Async loader only
+
+Call `linenumber.loader` and pass the function.
+
+```js
+// Contrived example
+linenumber.loader(function(file, done) {
+  fs.readFile(file, { encoding: 'utf8' }, function(err, contents) {
+    done(null, contents.replace('hello', 'goodbye'));
+  });
+});
+```
+
+### Provide both sync and async loaders
+
+You can call _either_ `loader` or `loaderSync` with an array or object to replace both the sync and async loaders.
+
+```js
+linenumber.loader([sync, async]);
+// or
+linenumber.loader({ sync: sync, async: async });
+```
+
+### Args
+
+You can also provide arguments to be passed to loader functions.
+
+```js
+// someSyncFunction will be invoked with the filename, 'foo', and 'bar'
+linenumber.loaderSync(someSyncFunction, 'foo', 'bar');
+```
+
+### Context
+
+You can even set the context of the `this` object for the loader function:
+
+```
+linenumber.loader.apply(this, asyncFunc);
+```
+
+In this case, `linenumber` will store the `this` context and apply it whenever the loader is called.
+
+### Reset the loaders
+
+If for some reason, you need to restore the original loaders, just call `linenumber.reset()`.
+
+## Browser
+
+Use whatever serving mechanism you prefer and serve `dist/linenumber.js` or `dist/linenumber.min.js`, then access it globally with `linenumber`.
 
 ```html
-<script src="/dist/expand-path.js"></script>
+<script src="/dist/linenumber.js"></script>
 <script>
-  var paths = expandPath('foo.ba[r,z]');
+  var matches = linenumber('Foo\nbar\nbaz', 'bar');
 </script>
 ```
-
-This script is a measly 1.7kb minified.
-
-### With object paths
-
-```js
-var expand = require('expand-path');
-var list = expand('foo.bar.[baz,quux].[hello,goodbye].world');
-
-/*
- * "list" equals:
- *  [
- *    'foo.bar.baz.hello.world',
- *    'foo.bar.quux.hello.world',
- *    'foo.bar.baz.goodbye.world',
- *    'foo.bar.quux.goodbye.world'
- *  ]
- */
-```
-
-### With file paths
-
-```js
-var expand = require('expand-path');
-var list = expand('foo/bar/[baz,quux]/hello/world[.js,spec-coffee]');
-
-/*
- * "list" equals:
- *  [
- *    'foo/bar/baz/hello/world.js',
- *    'foo/bar/quux/hello/world.js',
- *    'foo/bar/baz/hello/world-spec.coffee',
- *    'foo/bar/quux/hello/world-spec.coffee'
- *  ]
- */
-```
-
-Note that `expand-path` does not do any disk I/O. It does not read in these file paths or check that they exist. All it does is expand brackets into a list of paths. There are plenty of other modules that can make use of a list of paths (`async`, in combination with `fs` is enough).
 
 ## Contributing
 
