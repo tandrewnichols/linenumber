@@ -232,23 +232,13 @@ describe 'linenumber with literal text', ->
         Then -> (@match == undefined).should.be.true
         And -> @err.should.eql 'err'
 
-    #context 'of length 1', ->
-      #context 'with no error', ->
-        #Given -> @get = (file, done) => done @text
-        #Given -> @linenumber.loader @get
-        #When (done) -> @linenumber "foo/bar/banana.js", 'getColor', (err, @match) => done()
-        #Then -> @match.should.eql [
-          #file: "foo/bar/banana.js"
-          #line: 7
-          #match: 'getColor'
-        #]
-
-      #context 'with an error', ->
-        #Given -> @get = (file, done) => done @text
-        #Given -> @linenumber.loader @get
-        #When (done) -> @linenumber "foo/bar/banana.js", 'getColor', (err, @match) => done()
-        #Then -> @match.should.eql [
-          #file: "foo/bar/banana.js"
-          #line: 7
-          #match: 'getColor'
-        #]
+    context 'of length 1', ->
+      context 'with no error', ->
+        Given -> @get = (file, done) => done @text
+        Given -> @linenumber.loader @get
+        When (done) -> @linenumber "foo/bar/banana.js", 'getColor', (@match) => done()
+        Then -> @match.should.eql [
+          file: "foo/bar/banana.js"
+          line: 7
+          match: 'getColor'
+        ]
