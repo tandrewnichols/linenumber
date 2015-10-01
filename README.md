@@ -50,7 +50,7 @@ linenumber('lib/foo.json', 'hello'); // null
  * ASYNC
  */
 // The other versions above will also work asynchronously if a callback is passed
-linenumber('lib/foo.json', 'bar', function(err, results) { // ... }); // results = [{ line: 3, match: 'bar', file: 'lib/foo.json' }]
+linenumber('lib/foo.json', 'bar', function(err, results) { /*...*/ }); // results = [{ line: 3, match: 'bar', file: 'lib/foo.json' }]
 ```
 
 By default, `linenumber` will use `fs.readFile` and `fs.readFileSync` to read in the contents of a file, but you can set it up to use a different file loader if desired. For instance, since our examples above use a `.json` file, we can make `linenumber` use `require` as the loader instead.
@@ -59,6 +59,10 @@ By default, `linenumber` will use `fs.readFile` and `fs.readFileSync` to read in
 linenumber.loaderSync(require);
 linenumber('lib/foo.json', 'bar');
 ```
+
+ If you are using `linenumber` on the client-side, these defaults obviously will not work, so you will have to load your own. There are too many client side libraries and frameworks to try to establish a reasonable default.
+
+A note on async usage: `linenumber` looks at your callback length to try to determine whether to return `null, results` or just `results`. `fs` and many other node-based modules use the standard error-then-everything-else signature, but on the client-side that may not be the case. `linenumber` assumes that if a callback accepts only one parameter, it's the content, _not_ an error (which makes sense).
 
 ## Custom Loaders
 
@@ -131,4 +135,4 @@ Use whatever serving mechanism you prefer and serve `dist/linenumber.js` or `dis
 
 ## Contributing
 
-I'll be happy to merge any pull request that adds value and has passing tests. Be sure to add a test both for node and for the browser. Tests are run with `grunt`.
+Please see [the contribution guidelines](CONTRIBUTING.md).
