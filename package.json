@@ -1,6 +1,6 @@
 {
   "name": "linenumber",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Get the line number of one or more matches in a file",
   "main": "lib/linenumber.js",
   "scripts": {
