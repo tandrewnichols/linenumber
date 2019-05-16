@@ -8,10 +8,10 @@ install:
 script:
   - "grunt ci"
 node_js:
-  - "0.10"
-  - "0.12"
-  - "iojs-v1"
-  - "iojs-v2"
+  - "7"
+  - "8"
+  - "9"
+  - "10"
 cache:
   directories:
     - 'node_modules'
